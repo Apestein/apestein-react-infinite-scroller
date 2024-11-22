@@ -2,13 +2,12 @@
 import React from "react"
 
 interface InfiniteScrollProps extends React.HTMLAttributes<HTMLDivElement> {
-  fetchNextPage: () => void
-  fetchPreviousPage: () => void
+  fetchNextPage: () => Promise<any>
+  fetchPreviousPage: () => Promise<any>
   hasNextPage: boolean
   hasPreviousPage: boolean
   loadingMessage: React.ReactNode
   endingMessage: React.ReactNode
-  // data: { pages: { data: { id: number | string }[] } }[]
 }
 
 export const InfiniteScroller = React.forwardRef<
