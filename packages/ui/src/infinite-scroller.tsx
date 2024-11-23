@@ -1,18 +1,19 @@
 // eslint-disable-next-line no-redeclare
 import React from "react"
 
-interface InfiniteScrollProps extends React.HTMLAttributes<HTMLDivElement> {
+interface BiInfiniteScrollProps extends React.HTMLAttributes<HTMLDivElement> {
   fetchNextPage: () => Promise<any>
   fetchPreviousPage: () => Promise<any>
   hasNextPage: boolean
   hasPreviousPage: boolean
   loadingMessage: React.ReactNode
   endingMessage: React.ReactNode
+  isInitialData: boolean
 }
 
-export const InfiniteScroller = React.forwardRef<
+export const BiInfiniteScroller = React.forwardRef<
   HTMLDivElement,
-  InfiniteScrollProps
+  BiInfiniteScrollProps
 >(
   (
     {
@@ -22,6 +23,7 @@ export const InfiniteScroller = React.forwardRef<
       hasPreviousPage,
       endingMessage,
       loadingMessage,
+      isInitialData,
       children,
       ...props
     },
@@ -61,9 +63,63 @@ export const InfiniteScroller = React.forwardRef<
 
     return (
       <div ref={ref} {...props}>
+        {isInitialData
+          ? null
+          : hasPreviousPage
+            ? loadingMessage
+            : endingMessage}
         <div ref={prevObserverTarget} />
         {children}
         <div ref={nextObserverTarget} />
+        {hasNextPage ? loadingMessage : endingMessage}
+      </div>
+    )
+  }
+)
+
+interface InfiniteScrollProps extends React.HTMLAttributes<HTMLDivElement> {
+  fetchNextPage: () => Promise<any>
+  hasNextPage: boolean
+  loadingMessage: React.ReactNode
+  endingMessage: React.ReactNode
+}
+
+export const InfiniteScroller = React.forwardRef<
+  HTMLDivElement,
+  InfiniteScrollProps
+>(
+  (
+    {
+      fetchNextPage,
+      hasNextPage,
+      endingMessage,
+      loadingMessage,
+      children,
+      ...props
+    },
+    ref
+  ) => {
+    const observerTarget = React.useRef(null)
+
+    React.useEffect(() => {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0]?.isIntersecting && hasNextPage) fetchNextPage()
+        },
+        { threshold: 1 }
+      )
+
+      if (observerTarget.current) {
+        observer.observe(observerTarget.current)
+      }
+
+      return () => observer.disconnect()
+    }, [])
+
+    return (
+      <div ref={ref} {...props}>
+        {children}
+        <div ref={observerTarget} />
         {hasNextPage ? loadingMessage : endingMessage}
       </div>
     )
