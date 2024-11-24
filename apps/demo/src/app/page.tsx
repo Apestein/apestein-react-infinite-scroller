@@ -5,7 +5,7 @@ import { BiInfiniteScrollSection } from "./bi-infinite-scroll-section"
 
 export default function Home() {
   return (
-    <main className="grid grid-cols-4 container mx-auto p-12">
+    <main className="grid grid-cols-3 container mx-auto p-12">
       <NormalInfiniteScrollSection />
       <InverseInfiniteScrollSection />
       <BiInfiniteScrollSection />
