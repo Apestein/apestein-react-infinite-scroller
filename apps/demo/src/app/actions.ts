@@ -10,17 +10,14 @@ export async function getFooAction(cursor: number) {
       foo: start + i * step,
       id: crypto.randomUUID().toString(),
     }))
-  const foo = {
+  return {
     data: range(cursor, cursor + 9, 1),
     nextCursor: cursor < 40 ? cursor + 9 + 1 : null,
-    prevCursor: cursor >= 0 ? cursor - 9 - 1 : null,
-    //changing >= to > will cause bug
-    // prevCursor: cursor > 0 ? cursor - 9 - 1 : null,
+    prevCursor: cursor > 0 ? cursor - 9 - 1 : null,
   }
-  console.log(cursor, foo)
-  return foo
 }
 
+//reverse data for inverse scroll
 export async function getLatestFooAction(cursor: number) {
   await new Promise((resolve) => setTimeout(resolve, 500))
   const range = (start: number, stop: number, step: number) =>
@@ -28,11 +25,9 @@ export async function getLatestFooAction(cursor: number) {
       foo: start + i * step,
       id: crypto.randomUUID().toString(),
     }))
-  const foo = {
+  return {
     data: range(cursor, cursor + 9, 1).reverse(),
     nextCursor: cursor < 40 ? cursor + 9 + 1 : null,
     prevCursor: cursor > 0 ? cursor - 9 - 1 : null,
   }
-  console.log(cursor, foo)
-  return foo
 }

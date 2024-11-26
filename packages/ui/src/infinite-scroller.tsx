@@ -57,7 +57,6 @@ interface BiInfiniteScrollProps extends React.HTMLAttributes<HTMLDivElement> {
   hasPreviousPage: boolean
   loadingMessage: React.ReactNode
   endingMessage: React.ReactNode
-  isInitialData: boolean
 }
 
 export const BiInfiniteScroller = React.forwardRef<
@@ -72,7 +71,6 @@ export const BiInfiniteScroller = React.forwardRef<
       hasPreviousPage,
       endingMessage,
       loadingMessage,
-      isInitialData,
       children,
       ...props
     },
@@ -80,9 +78,10 @@ export const BiInfiniteScroller = React.forwardRef<
   ) => {
     const nextObserverTarget = React.useRef(null)
     const prevObserverTarget = React.useRef(null)
+    const anchorRef = React.useRef<HTMLDivElement>(null)
 
     React.useEffect(() => {
-      if (hasPreviousPage) fetchPreviousPage() //workaround tanstack query bug
+      anchorRef.current?.scrollIntoView() //scroll to bottom on initial load
 
       const observer = new IntersectionObserver(
         (entries) => {
@@ -114,16 +113,12 @@ export const BiInfiniteScroller = React.forwardRef<
 
     return (
       <div ref={ref} {...props}>
-        {isInitialData
-          ? null
-          : hasPreviousPage
-            ? loadingMessage
-            : endingMessage}
-
+        {hasPreviousPage ? loadingMessage : endingMessage}
         <div ref={prevObserverTarget} />
         {children}
         <div ref={nextObserverTarget} />
         {hasNextPage ? loadingMessage : endingMessage}
+        <div ref={anchorRef} />
       </div>
     )
   }
