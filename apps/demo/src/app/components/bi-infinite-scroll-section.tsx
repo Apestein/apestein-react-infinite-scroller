@@ -1,6 +1,6 @@
 "use client"
 import { BiInfiniteScroller } from "@repo/ui/infinite-scroller"
-import { getFooAction } from "./actions"
+import { getFooAction } from "../actions"
 import { useInfiniteQuery } from "@tanstack/react-query"
 import React from "react"
 
@@ -19,7 +19,7 @@ export function BiInfiniteScrollSection() {
       prevDataRef.current = data
       return getFooAction(pageParam)
     },
-    initialPageParam: 30, //currently setting initialPageParam to last page will cause bug due to tanstack query
+    initialPageParam: 30, //currently, setting initialPageParam to last page will cause bug due to tanstack query, instead set it second to last page
     getNextPageParam: (nextPage, pages) => nextPage.nextCursor,
     getPreviousPageParam: (prevPage, pages) => prevPage.prevCursor,
     maxPages: 3, //set maxPage for good performance, but not needed if infinite list is short
@@ -41,7 +41,8 @@ export function BiInfiniteScrollSection() {
   }, [data?.pageParams])
 
   if (status === "error") return <p>Error {error.message}</p>
-  if (status === "pending") return <p>Loading...</p>
+  if (status === "pending")
+    return <p className="h-[312px]">Loading from client...</p>
   return (
     <section>
       <h1 className="font-bold">Bi-directional Infinite Scroll</h1>
