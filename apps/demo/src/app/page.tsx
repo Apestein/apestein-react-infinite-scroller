@@ -26,8 +26,9 @@ export default async function Home() {
         use server action to fetch. Next.js server actions are placed in a
         queue, which means only one action can be running at a time. You can use
         API with route handlers instead but you lose the end-to-end typesafety
-        of server actions. To solve this you can use TRPC, or by prefetching and
-        suspense. Notice how prefetching example loads the quickest.
+        of server actions. To solve this you can use TRPC, or by using
+        prefetching and suspense. Notice how prefetching example loads the
+        quickest.
       </section>
     </main>
   )
