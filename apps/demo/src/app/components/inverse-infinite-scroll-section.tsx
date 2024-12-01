@@ -1,5 +1,5 @@
 "use client"
-import { InfiniteScroller } from "@repo/ui/infinite-scroller"
+import { InfiniteScroller } from "@repo/ui/infinite-scrollers"
 import { getLatestFooAction } from "../actions"
 import { useInfiniteQuery } from "@tanstack/react-query"
 import React from "react"

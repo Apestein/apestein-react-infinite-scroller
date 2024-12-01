@@ -83,8 +83,8 @@ export const BiInfiniteScroller = React.forwardRef<
     const nextObserverTarget = React.useRef(null)
     const prevObserverTarget = React.useRef(null)
     if (!firstItemId || !lastItemId) throw new Error("No first/last item")
-    const prevFirstItemId = React.useRef("")
-    const prevLastItemId = React.useRef("")
+    const prevFirstItemRef = React.useRef<{ id: string } | null>(null)
+    const prevLastItemRef = React.useRef<{ id: string } | null>(null)
 
     React.useEffect(() => {
       const observer = new IntersectionObserver(
@@ -94,13 +94,13 @@ export const BiInfiniteScroller = React.forwardRef<
               entries.at(0)?.target === nextObserverTarget.current &&
               hasNextPage
             ) {
-              prevLastItemId.current = lastItemId
+              prevLastItemRef.current = { id: lastItemId }
               fetchNextPage()
             } else if (
               entries.at(0)?.target === prevObserverTarget.current &&
               hasPreviousPage
             ) {
-              prevFirstItemId.current = firstItemId
+              prevFirstItemRef.current = { id: firstItemId }
               fetchPreviousPage()
             }
           }
@@ -119,14 +119,16 @@ export const BiInfiniteScroller = React.forwardRef<
     }, [hasNextPage, hasPreviousPage, firstItemId, lastItemId])
 
     React.useEffect(() => {
-      const prevFirstItem = document.getElementById(prevFirstItemId.current)
+      if (!prevFirstItemRef.current) return
+      const prevFirstItem = document.getElementById(prevFirstItemRef.current.id)
       prevFirstItem?.scrollIntoView()
-    }, [prevFirstItemId.current])
+    }, [prevFirstItemRef.current])
 
     React.useEffect(() => {
-      const prevLastItem = document.getElementById(prevLastItemId.current)
+      if (!prevLastItemRef.current) return
+      const prevLastItem = document.getElementById(prevLastItemRef.current.id)
       prevLastItem?.scrollIntoView(false)
-    }, [prevLastItemId.current])
+    }, [prevLastItemRef.current])
 
     return (
       <div ref={ref} {...props}>
@@ -135,6 +137,7 @@ export const BiInfiniteScroller = React.forwardRef<
         {children}
         <div ref={nextObserverTarget} />
         {hasNextPage ? loadingMessage : endingMessage}
+        {/* scroll to bottom on mount */}
         <div ref={(node: HTMLDivElement) => node?.scrollIntoView()} />
       </div>
     )

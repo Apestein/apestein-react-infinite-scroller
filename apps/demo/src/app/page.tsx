@@ -4,6 +4,7 @@ import { InverseInfiniteScrollSection } from "./components/inverse-infinite-scro
 import { BiInfiniteScrollSection } from "./components/bi-infinite-scroll-section"
 import { ApiInfiniteScrollSection } from "./components/api-infinite-scroll-section"
 import { PreInfiniteScrollSection } from "./components/prefetch-infinite-scroll-section"
+import { VirtualInfiniteScrollSection } from "./components/virtual-infinite-scroll-section"
 import {
   dehydrate,
   HydrationBoundary,
@@ -30,6 +31,7 @@ export default async function Home() {
         prefetching and suspense. Notice how prefetching example loads the
         quickest.
       </section>
+      <VirtualInfiniteScrollSection />
     </main>
   )
 }
