@@ -15,7 +15,7 @@ import { getFooAction } from "./actions"
 export default async function Home() {
   return (
     <main className="grid grid-cols-3 container mx-auto p-12">
-      <NormalInfiniteScrollSection />
+      {/* <NormalInfiniteScrollSection />
       <InverseInfiniteScrollSection />
       <BiInfiniteScrollSection />
       <Suspense fallback="Loading from server...">
@@ -30,7 +30,7 @@ export default async function Home() {
         of server actions. To solve this you can use TRPC, or by using
         prefetching and suspense. Notice how prefetching example loads the
         quickest.
-      </section>
+      </section> */}
       <VirtualInfiniteScrollSection />
     </main>
   )

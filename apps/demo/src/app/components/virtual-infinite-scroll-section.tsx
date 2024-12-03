@@ -1,5 +1,4 @@
 /* eslint-disable react/no-unescaped-entities */
-/* eslint-disable react-hooks/exhaustive-deps */
 "use client"
 import React from "react"
 import { useInfiniteQuery } from "@tanstack/react-query"
@@ -23,7 +22,6 @@ export function VirtualInfiniteScrollSection() {
     status,
     data,
     error,
-    isFetching,
     isFetchingNextPage,
     isFetchingPreviousPage,
     fetchNextPage,
@@ -38,9 +36,9 @@ export function VirtualInfiniteScrollSection() {
     initialPageParam: 0,
   })
 
-  const allRows = data ? data.pages.flatMap((d) => d.rows) : []
-
   const parentRef = React.useRef<HTMLDivElement>(null)
+
+  const allRows = data ? data.pages.flatMap((d) => d.rows) : []
 
   const rowVirtualizer = useVirtualizer({
     count: hasNextPage || hasPreviousPage ? allRows.length + 1 : allRows.length,
@@ -49,38 +47,40 @@ export function VirtualInfiniteScrollSection() {
     overscan: 0,
   })
 
-  React.useEffect(() => {
-    const [firstItem] = [...rowVirtualizer.getVirtualItems()]
-    const [lastItem] = [...rowVirtualizer.getVirtualItems()].reverse()
+  // React.useEffect(() => {
+  //   const [firstItem] = [...rowVirtualizer.getVirtualItems()]
+  //   const [lastItem] = [...rowVirtualizer.getVirtualItems()].reverse()
 
-    if (!lastItem || !firstItem) return
+  //   if (!lastItem || !firstItem) return
 
-    if (
-      lastItem.index >= allRows.length - 1 &&
-      hasNextPage &&
-      !isFetchingNextPage
-    ) {
-      // console.log(lastItem.index)
-      // fetchNextPage()
-    }
+  //   if (
+  //     lastItem.index >= allRows.length - 1 &&
+  //     hasNextPage &&
+  //     !isFetchingNextPage
+  //   ) {
+  //     fetchNextPage()
+  //   } else if (
+  //     firstItem.index <= 0 &&
+  //     hasPreviousPage &&
+  //     !isFetchingPreviousPage
+  //   ) {
+  //     fetchPreviousPage()
+  //   }
+  // }, [
+  //   hasNextPage,
+  //   hasPreviousPage,
+  //   fetchNextPage,
+  //   fetchPreviousPage,
+  //   allRows.length,
+  //   isFetchingNextPage,
+  //   isFetchingPreviousPage,
+  //   rowVirtualizer.getVirtualItems(),
+  // ])
 
-    if (firstItem.index <= 0) {
-      console.log(firstItem.index)
-      fetchPreviousPage().finally(() =>
-        rowVirtualizer.scrollToIndex(10, { align: "end" })
-      )
-      // fetchPreviousPage().finally(() => rowVirtualizer.scrollToOffset(500))
-    }
-  }, [
-    hasNextPage,
-    hasPreviousPage,
-    fetchNextPage,
-    fetchPreviousPage,
-    allRows.length,
-    isFetchingNextPage,
-    isFetchingPreviousPage,
-    rowVirtualizer.getVirtualItems(),
-  ])
+  // React.useEffect(() => {
+  //   if (!isFetchingPreviousPage)
+  //     rowVirtualizer.scrollToIndex(10, { align: "start" })
+  // }, [isFetchingPreviousPage, rowVirtualizer])
 
   if (status === "error") return <p>Error {error.message}</p>
   if (status === "pending")
@@ -134,6 +134,7 @@ export function VirtualInfiniteScrollSection() {
                     ? "Loading more..."
                     : "Nothing more to load"
                   : post}
+                {/* <div ref={(node: HTMLDivElement) => node?.scrollIntoView()} /> */}
               </div>
             )
           })}
