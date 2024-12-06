@@ -5,20 +5,22 @@ import React from "react"
 import { useInfiniteQuery } from "@tanstack/react-query"
 import { useVirtualizer } from "@tanstack/react-virtual"
 
-async function fetchServerPage(
-  limit: number,
-  offset: number = 0
-): Promise<{ rows: Array<string>; nextOffset: number; prevOffset: number }> {
+async function fetchServerPage(limit: number, offset: number = 0) {
   const rows = new Array(limit)
     .fill(0)
     .map((_, i) => `Async loaded row #${i + offset * limit}`)
 
   await new Promise((r) => setTimeout(r, 500))
 
-  return { rows, nextOffset: offset + 1, prevOffset: offset - 1 }
+  return {
+    rows,
+    nextOffset: offset < 4 ? offset + 1 : null,
+    prevOffset: offset > -4 ? offset - 1 : null,
+  }
 }
 
 export function VirtualInfiniteScrollSection() {
+  const PAGE_SIZE = 10
   const {
     status,
     data,
@@ -30,8 +32,8 @@ export function VirtualInfiniteScrollSection() {
     hasNextPage,
     hasPreviousPage,
   } = useInfiniteQuery({
-    queryKey: ["projects"],
-    queryFn: (ctx) => fetchServerPage(10, ctx.pageParam),
+    queryKey: ["virtual-infinite-data"],
+    queryFn: (ctx) => fetchServerPage(PAGE_SIZE, ctx.pageParam),
     getNextPageParam: (lastGroup) => lastGroup.nextOffset,
     getPreviousPageParam: (firstGroup) => firstGroup.prevOffset,
     initialPageParam: 0,
@@ -40,12 +42,11 @@ export function VirtualInfiniteScrollSection() {
   const parentRef = React.useRef<HTMLDivElement>(null)
   const backwardScrollRef = React.useRef<string | null>(null)
   const dirtyHack = React.useRef(false)
-  const anchorRef = React.useRef<HTMLDivElement>(null)
 
   const allRows = data ? data.pages.flatMap((d) => d.rows) : []
 
   const rowVirtualizer = useVirtualizer({
-    count: hasNextPage || hasPreviousPage ? allRows.length + 1 : allRows.length,
+    count: allRows.length + 2,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 100,
     overscan: 0,
@@ -73,8 +74,7 @@ export function VirtualInfiniteScrollSection() {
         return
       }
       fetchPreviousPage().finally(() => {
-        // rowVirtualizer.scrollToIndex(10, { align: "start" })
-        // trying to scroll here seems to cause race condition that sometimes will prevent fetching next page
+        // rowVirtualizer.scrollToIndex(10, { align: "start" }) //trying to scroll here seems to cause race condition that sometimes will prevent fetching next page
         backwardScrollRef.current = crypto.randomUUID() //hack to prevent race condition
         dirtyHack.current = true //dirty hack to prevent double fetch
       })
@@ -91,68 +91,65 @@ export function VirtualInfiniteScrollSection() {
   ])
 
   React.useEffect(() => {
-    rowVirtualizer.scrollToIndex(10, { align: "start" })
+    if (!backwardScrollRef.current) return
+    rowVirtualizer.scrollToIndex(PAGE_SIZE, { align: "start" })
   }, [backwardScrollRef.current])
 
-  // React.useEffect(() => {
-  //   console.count()
-  //   if (anchorRef.current) anchorRef.current.scrollIntoView()
-  // }, [])
+  React.useEffect(() => {
+    dirtyHack.current = false //more hacky shit...
+    if (allRows.length === PAGE_SIZE) {
+      rowVirtualizer.scrollToIndex(PAGE_SIZE) //scroll to bottom on initial load
+    }
+  }, [allRows.length])
 
   if (status === "error") return <p>Error {error.message}</p>
   if (status === "pending")
     return <p className="h-[312px]">Loading from client...</p>
   return (
     <section>
-      <p>
-        This infinite scroll example uses React Query's useInfiniteScroll hook
-        to fetch infinite data from a posts endpoint and then a rowVirtualizer
-        is used along with a loader-row placed at the bottom of the list to
-        trigger the next page to load.
-      </p>
       <div
         ref={parentRef}
-        className="List"
-        style={{
-          height: `500px`,
-          width: `100%`,
-          overflow: "auto",
-        }}
+        className="h-[500px] w-full overflow-auto"
+        // style={{
+        //   height: `500px`,
+        //   width: `100%`,
+        //   overflow: "auto",
+        // }}
       >
         <div
+          className="w-full relative"
           style={{
-            height: `${rowVirtualizer.getTotalSize()}px`,
-            width: "100%",
-            position: "relative",
+            height: `${rowVirtualizer.getTotalSize()}px`, //not possible with tailwind
+            // width: "100%",
+            // position: "relative",
           }}
         >
           {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-            const isLoaderRow =
-              virtualRow.index > allRows.length - 1 || virtualRow.index <= 0
-            const post = allRows[virtualRow.index]
-
+            const isLoaderTop = virtualRow.index === 0
+            const isLoaderBottom = virtualRow.index > allRows.length
+            const post = allRows[virtualRow.index - 1]
             return (
               <div
                 key={virtualRow.index}
-                className={
-                  virtualRow.index % 2 ? "ListItemOdd" : "ListItemEven"
-                }
+                className="absolute top-0 left-0 w-full"
                 style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  width: "100%",
+                  // position: "absolute",
+                  // top: 0,
+                  // left: 0,
+                  // width: "100%",
                   height: `${virtualRow.size}px`,
                   transform: `translateY(${virtualRow.start}px)`,
                 }}
               >
-                {isLoaderRow
-                  ? hasNextPage
-                    ? "Loading more..."
-                    : "Nothing more to load"
-                  : post}
-                {/* <div ref={(node: HTMLDivElement) => node?.scrollIntoView()} /> */}
-                {/* <div ref={anchorRef} /> */}
+                {isLoaderTop
+                  ? hasPreviousPage
+                    ? "Loading previous page..."
+                    : "No more previous page"
+                  : isLoaderBottom
+                    ? hasNextPage
+                      ? "Loading next page..."
+                      : "No more next page"
+                    : post}
               </div>
             )
           })}
