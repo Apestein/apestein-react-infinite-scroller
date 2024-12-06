@@ -5,7 +5,7 @@ import React from "react"
 import { useInfiniteQuery } from "@tanstack/react-query"
 import { useVirtualizer } from "@tanstack/react-virtual"
 
-async function fetchServerPage(limit: number, offset: number = 0) {
+async function fetchInfiniteData(limit: number, offset: number = 0) {
   const rows = new Array(limit)
     .fill(0)
     .map((_, i) => `Async loaded row #${i + offset * limit}`)
@@ -33,7 +33,7 @@ export function VirtualInfiniteScrollSection() {
     hasPreviousPage,
   } = useInfiniteQuery({
     queryKey: ["virtual-infinite-data"],
-    queryFn: (ctx) => fetchServerPage(PAGE_SIZE, ctx.pageParam),
+    queryFn: (ctx) => fetchInfiniteData(PAGE_SIZE, ctx.pageParam),
     getNextPageParam: (lastGroup) => lastGroup.nextOffset,
     getPreviousPageParam: (firstGroup) => firstGroup.prevOffset,
     initialPageParam: 0,
@@ -104,24 +104,14 @@ export function VirtualInfiniteScrollSection() {
 
   if (status === "error") return <p>Error {error.message}</p>
   if (status === "pending")
-    return <p className="h-[312px]">Loading from client...</p>
+    return <p className="h-[500px]">Loading from client...</p>
   return (
     <section>
-      <div
-        ref={parentRef}
-        className="h-[500px] w-full overflow-auto"
-        // style={{
-        //   height: `500px`,
-        //   width: `100%`,
-        //   overflow: "auto",
-        // }}
-      >
+      <div ref={parentRef} className="h-[500px] w-full overflow-auto">
         <div
           className="w-full relative"
           style={{
             height: `${rowVirtualizer.getTotalSize()}px`, //not possible with tailwind
-            // width: "100%",
-            // position: "relative",
           }}
         >
           {rowVirtualizer.getVirtualItems().map((virtualRow) => {
@@ -133,10 +123,6 @@ export function VirtualInfiniteScrollSection() {
                 key={virtualRow.index}
                 className="absolute top-0 left-0 w-full"
                 style={{
-                  // position: "absolute",
-                  // top: 0,
-                  // left: 0,
-                  // width: "100%",
                   height: `${virtualRow.size}px`,
                   transform: `translateY(${virtualRow.start}px)`,
                 }}
