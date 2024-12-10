@@ -15,8 +15,8 @@ import { getFooAction } from "./actions";
 export default async function Home() {
   return (
     <main className="container mx-auto grid grid-cols-3 p-12">
-      {/* <NormalInfiniteScrollSection /> */}
-      {/* <InverseInfiniteScrollSection /> */}
+      <NormalInfiniteScrollSection />
+      <InverseInfiniteScrollSection />
       <BiInfiniteScrollSection />
       {/* <Suspense fallback="Loading from server...">
         <PrefetchWrapper />
@@ -31,7 +31,7 @@ export default async function Home() {
         prefetching and suspense. Notice how prefetching example loads the
         quickest.
       </section> */}
-      <VirtualInfiniteScrollSection />
+      {/* <VirtualInfiniteScrollSection /> */}
     </main>
   );
 }

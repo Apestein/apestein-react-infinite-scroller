@@ -57,89 +57,70 @@ interface BiInfiniteScrollProps extends React.HTMLAttributes<HTMLDivElement> {
   hasPreviousPage: boolean
   loadingMessage: React.ReactNode
   endingMessage: React.ReactNode
-  firstItemId: string | undefined
-  lastItemId: string | undefined
 }
 
-export const BiInfiniteScroller = React.forwardRef<
-  HTMLDivElement,
-  BiInfiniteScrollProps
->(
-  (
-    {
-      fetchNextPage,
-      fetchPreviousPage,
-      hasNextPage,
-      hasPreviousPage,
-      endingMessage,
-      loadingMessage,
-      firstItemId,
-      lastItemId,
-      children,
-      ...props
-    },
-    ref
-  ) => {
-    const nextObserverTarget = React.useRef(null)
-    const prevObserverTarget = React.useRef(null)
-    if (!firstItemId || !lastItemId) throw new Error("No first/last item")
-    const prevFirstItemRef = React.useRef<{ id: string } | null>(null)
-    const prevLastItemRef = React.useRef<{ id: string } | null>(null)
+export function BiInfiniteScroller({
+  fetchNextPage,
+  fetchPreviousPage,
+  hasNextPage,
+  hasPreviousPage,
+  endingMessage,
+  loadingMessage,
+  children,
+  ...props
+}: BiInfiniteScrollProps) {
+  const nextObserverTarget = React.useRef(null)
+  const prevObserverTarget = React.useRef(null)
+  const parentRef = React.useRef<HTMLDivElement>(null)
+  const prevScrollHeight = React.useRef<number>()
 
-    React.useEffect(() => {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          if (entries.at(0)?.isIntersecting) {
-            if (
-              entries.at(0)?.target === nextObserverTarget.current &&
-              hasNextPage
-            ) {
-              prevLastItemRef.current = { id: lastItemId }
-              fetchNextPage()
-            } else if (
-              entries.at(0)?.target === prevObserverTarget.current &&
-              hasPreviousPage
-            ) {
-              prevFirstItemRef.current = { id: firstItemId }
-              fetchPreviousPage()
-            }
+  React.useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.at(0)?.isIntersecting) {
+          if (
+            entries.at(0)?.target === nextObserverTarget.current &&
+            hasNextPage
+          ) {
+            fetchNextPage()
+          } else if (
+            entries.at(0)?.target === prevObserverTarget.current &&
+            hasPreviousPage
+          ) {
+            prevScrollHeight.current = parentRef.current?.scrollHeight
+            fetchPreviousPage()
           }
-        },
-        { threshold: 1 }
-      )
-
-      if (nextObserverTarget.current) {
-        observer.observe(nextObserverTarget.current)
-      }
-      if (prevObserverTarget.current) {
-        observer.observe(prevObserverTarget.current)
-      }
-
-      return () => observer.disconnect()
-    }, [hasNextPage, hasPreviousPage, firstItemId, lastItemId])
-
-    React.useEffect(() => {
-      if (!prevFirstItemRef.current) return
-      const prevFirstItem = document.getElementById(prevFirstItemRef.current.id)
-      prevFirstItem?.scrollIntoView()
-    }, [prevFirstItemRef.current])
-
-    React.useEffect(() => {
-      if (!prevLastItemRef.current) return
-      const prevLastItem = document.getElementById(prevLastItemRef.current.id)
-      prevLastItem?.scrollIntoView(false)
-    }, [prevLastItemRef.current])
-
-    return (
-      <div ref={ref} {...props}>
-        <div ref={prevObserverTarget} />
-        {hasPreviousPage ? loadingMessage : endingMessage}
-        {children}
-        {hasNextPage ? loadingMessage : endingMessage}
-        <div ref={nextObserverTarget} />
-        {/* scroll to bottom on mount */}
-        {/* <div ref={(node: HTMLDivElement) => node?.scrollIntoView()} /> */}
-      </div>
+        }
+      },
+      { threshold: 1 }
     )
-  }
-)
+
+    if (nextObserverTarget.current) {
+      observer.observe(nextObserverTarget.current)
+    }
+    if (prevObserverTarget.current) {
+      observer.observe(prevObserverTarget.current)
+    }
+
+    return () => observer.disconnect()
+  }, [hasNextPage, hasPreviousPage])
+
+  React.useEffect(() => {
+    if (parentRef.current && !prevScrollHeight.current)
+      parentRef.current.scrollTop = parentRef.current.scrollHeight
+    else if (parentRef.current && prevScrollHeight.current) {
+      parentRef.current.scrollTop =
+        parentRef.current.scrollHeight - prevScrollHeight.current
+    }
+  }, [prevScrollHeight.current])
+
+  return (
+    <div ref={parentRef} {...props}>
+      <div ref={prevObserverTarget} />
+      {hasPreviousPage ? loadingMessage : endingMessage}
+      {children}
+      {hasNextPage ? loadingMessage : endingMessage}
+      <div ref={nextObserverTarget} />
+    </div>
+  )
+}
