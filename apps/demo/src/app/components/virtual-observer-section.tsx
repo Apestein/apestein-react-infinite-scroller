@@ -1,5 +1,8 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable react/no-unescaped-entities */
+/*
+  Attempt to use Tanstack Virtual with Intersection Observer, which will reduced complexity and eliminate the use of hacks. 
+  Failed, but I will leave this here incase anyone wants to have a go at it.
+*/
+
 "use client"
 import React from "react"
 import { useInfiniteQuery } from "@tanstack/react-query"
@@ -19,7 +22,7 @@ async function fetchInfiniteData(limit: number, offset: number = 0) {
   }
 }
 
-export function VirtualInfiniteScrollSection() {
+export function VirtualObserverSection() {
   const PAGE_SIZE = 10
   const {
     status,
@@ -39,70 +42,50 @@ export function VirtualInfiniteScrollSection() {
     initialPageParam: 0,
   })
 
+  const nextObserverTarget = React.useRef(null)
+  const prevObserverTarget = React.useRef(null)
   const parentRef = React.useRef<HTMLDivElement>(null)
-  const backwardScrollRef = React.useRef<string | null>(null)
-  const dirtyHack = React.useRef(false)
 
   const allRows = data ? data.pages.flatMap((d) => d.rows) : []
 
   const rowVirtualizer = useVirtualizer({
-    count: allRows.length + 2, //plus 2 for top & bottom loader row
+    count: allRows.length + 2,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 100,
     overscan: 0,
   })
 
   React.useEffect(() => {
-    const [firstItem] = [...rowVirtualizer.getVirtualItems()]
-    const [lastItem] = [...rowVirtualizer.getVirtualItems()].reverse()
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.at(0)?.isIntersecting) {
+          if (
+            entries.at(0)?.target === nextObserverTarget.current &&
+            hasNextPage &&
+            !isFetchingNextPage
+          ) {
+            fetchNextPage()
+          } else if (
+            entries.at(0)?.target === prevObserverTarget.current &&
+            hasPreviousPage &&
+            !isFetchingPreviousPage
+          ) {
+            fetchPreviousPage()
+          }
+        }
+      },
+      { threshold: 1 }
+    )
 
-    if (!lastItem || !firstItem) return
-
-    if (
-      lastItem.index >= allRows.length - 1 &&
-      hasNextPage &&
-      !isFetchingNextPage
-    ) {
-      fetchNextPage()
-    } else if (
-      firstItem.index === 0 &&
-      hasPreviousPage &&
-      !isFetchingPreviousPage
-    ) {
-      if (dirtyHack.current) {
-        dirtyHack.current = false
-        return
-      }
-      fetchPreviousPage().finally(() => {
-        // rowVirtualizer.scrollToIndex(10, { align: "start" }) //trying to scroll here seems to cause race condition that sometimes will prevent fetching next page
-        backwardScrollRef.current = crypto.randomUUID() //hack to prevent race condition
-        dirtyHack.current = true //dirty hack to prevent double fetch
-      })
+    if (nextObserverTarget.current) {
+      observer.observe(nextObserverTarget.current)
     }
-  }, [
-    hasNextPage,
-    hasPreviousPage,
-    fetchNextPage,
-    fetchPreviousPage,
-    allRows.length,
-    isFetchingNextPage,
-    isFetchingPreviousPage,
-    rowVirtualizer.getVirtualItems(),
-  ])
-
-  //preserve scroll position for backwards scroll, forward scroll is already handled automatically
-  React.useEffect(() => {
-    if (!backwardScrollRef.current) return
-    rowVirtualizer.scrollToIndex(PAGE_SIZE, { align: "start" })
-  }, [backwardScrollRef.current])
-
-  //scroll to bottom on initial load, delete if you don't want this behavior
-  React.useEffect(() => {
-    dirtyHack.current = false //more hacky shit...
-    if (allRows.length === PAGE_SIZE) {
-      rowVirtualizer.scrollToIndex(PAGE_SIZE)
+    if (prevObserverTarget.current) {
+      observer.observe(prevObserverTarget.current)
     }
-  }, [allRows.length])
+
+    return () => observer.disconnect()
+  }, [hasNextPage, hasPreviousPage, isFetchingNextPage, isFetchingPreviousPage])
 
   if (status === "error") return <p>Error {error.message}</p>
   if (status === "pending")
@@ -116,10 +99,24 @@ export function VirtualInfiniteScrollSection() {
             height: `${rowVirtualizer.getTotalSize()}px`, //not possible with tailwind
           }}
         >
+          {/* <div ref={prevObserverTarget}>prev observer</div> 
+            unfortunately, both next and prev observer div will be rendered on top, so this doesn't work
+          */}
           {rowVirtualizer.getVirtualItems().map((virtualRow) => {
             const isLoaderTop = virtualRow.index === 0
             const isLoaderBottom = virtualRow.index > allRows.length
             const post = allRows[virtualRow.index - 1]
+
+            // doing it this way will not trigger intersection observer
+            // if (isLoaderTop)
+            //   return (
+            //     <div key={virtualRow.index} ref={prevObserverTarget}>
+            //       ...
+            //     </div>
+            //   )
+            // else if (isLoaderBottom)
+            //   return <div key={virtualRow.index} ref={nextObserverTarget} />
+            // else
             return (
               <div
                 key={virtualRow.index}
@@ -141,6 +138,9 @@ export function VirtualInfiniteScrollSection() {
               </div>
             )
           })}
+          {/* <div ref={nextObserverTarget}>next observer</div> 
+            unfortunately, both next and prev observer div will be rendered on top, so this doesn't work
+          */}
         </div>
       </div>
     </section>

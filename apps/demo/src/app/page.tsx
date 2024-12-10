@@ -1,24 +1,24 @@
-import React, { Suspense } from "react"
-import { NormalInfiniteScrollSection } from "./components/normal-infinite-scroll-section"
-import { InverseInfiniteScrollSection } from "./components/inverse-infinite-scroll-section"
-import { BiInfiniteScrollSection } from "./components/bi-infinite-scroll-section"
-import { ApiInfiniteScrollSection } from "./components/api-infinite-scroll-section"
-import { PreInfiniteScrollSection } from "./components/prefetch-infinite-scroll-section"
-import { VirtualInfiniteScrollSection } from "./components/virtual-infinite-scroll-section"
+import React, { Suspense } from "react";
+import { NormalInfiniteScrollSection } from "./components/normal-infinite-scroll-section";
+import { InverseInfiniteScrollSection } from "./components/inverse-infinite-scroll-section";
+import { BiInfiniteScrollSection } from "./components/bi-infinite-scroll-section";
+import { ApiInfiniteScrollSection } from "./components/api-infinite-scroll-section";
+import { PreInfiniteScrollSection } from "./components/prefetch-infinite-scroll-section";
+import { VirtualInfiniteScrollSection } from "./components/virtual-infinite-scroll-section";
 import {
   dehydrate,
   HydrationBoundary,
   QueryClient,
-} from "@tanstack/react-query"
-import { getFooAction } from "./actions"
+} from "@tanstack/react-query";
+import { getFooAction } from "./actions";
 
 export default async function Home() {
   return (
-    <main className="grid grid-cols-3 container mx-auto p-12">
-      {/* <NormalInfiniteScrollSection />
-      <InverseInfiniteScrollSection />
+    <main className="container mx-auto grid grid-cols-3 p-12">
+      {/* <NormalInfiniteScrollSection /> */}
+      {/* <InverseInfiniteScrollSection /> */}
       <BiInfiniteScrollSection />
-      <Suspense fallback="Loading from server...">
+      {/* <Suspense fallback="Loading from server...">
         <PrefetchWrapper />
       </Suspense>
       <ApiInfiniteScrollSection />
@@ -33,22 +33,22 @@ export default async function Home() {
       </section> */}
       <VirtualInfiniteScrollSection />
     </main>
-  )
+  );
 }
 
 async function PrefetchWrapper() {
-  const queryClient = new QueryClient()
+  const queryClient = new QueryClient();
   await queryClient.prefetchInfiniteQuery({
     queryKey: ["prefetch-infinite-data"],
     queryFn: ({ pageParam }) => getFooAction(pageParam),
     initialPageParam: 0,
     // getNextPageParam: (lastPage, pages) => lastPage.nextCursor,
     // pages: 3, //number of pages to prefetch
-  })
+  });
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <PreInfiniteScrollSection />
     </HydrationBoundary>
-  )
+  );
 }

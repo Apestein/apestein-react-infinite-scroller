@@ -1,8 +1,8 @@
-"use client"
-import { InfiniteScroller } from "@repo/ui/infinite-scrollers"
-import { getLatestFooAction } from "../actions"
-import { useInfiniteQuery } from "@tanstack/react-query"
-import React from "react"
+"use client";
+import { InfiniteScroller } from "@repo/ui/infinite-scrollers";
+import { getLatestFooAction } from "../actions";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import React from "react";
 
 export function InverseInfiniteScrollSection() {
   const { data, error, fetchNextPage, hasNextPage, status } = useInfiniteQuery({
@@ -10,11 +10,11 @@ export function InverseInfiniteScrollSection() {
     queryFn: ({ pageParam }) => getLatestFooAction(pageParam),
     initialPageParam: 40,
     getNextPageParam: (nextPage, pages) => nextPage.prevCursor,
-  })
+  });
 
-  if (status === "error") return <p>Error {error.message}</p>
+  if (status === "error") return <p>Error {error.message}</p>;
   if (status === "pending")
-    return <p className="h-[312px]">Loading from client...</p>
+    return <p className="h-[312px]">Loading from client...</p>;
   return (
     <section>
       <h1 className="font-bold">Inverse Infinite Scroll</h1>
@@ -23,7 +23,7 @@ export function InverseInfiniteScrollSection() {
         hasNextPage={hasNextPage}
         endingMessage="end"
         loadingMessage="loading..."
-        className="text-xl border-2 p-2 h-72 overflow-auto flex flex-col-reverse"
+        className="flex h-72 flex-col-reverse overflow-auto border-2 p-2 text-xl"
       >
         {data.pages.map((page, i) => (
           <React.Fragment key={i}>
@@ -36,5 +36,5 @@ export function InverseInfiniteScrollSection() {
         ))}
       </InfiniteScroller>
     </section>
-  )
+  );
 }

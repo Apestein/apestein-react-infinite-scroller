@@ -132,13 +132,13 @@ export const BiInfiniteScroller = React.forwardRef<
 
     return (
       <div ref={ref} {...props}>
-        {hasPreviousPage ? loadingMessage : endingMessage}
         <div ref={prevObserverTarget} />
+        {hasPreviousPage ? loadingMessage : endingMessage}
         {children}
-        <div ref={nextObserverTarget} />
         {hasNextPage ? loadingMessage : endingMessage}
+        <div ref={nextObserverTarget} />
         {/* scroll to bottom on mount */}
-        <div ref={(node: HTMLDivElement) => node?.scrollIntoView()} />
+        {/* <div ref={(node: HTMLDivElement) => node?.scrollIntoView()} /> */}
       </div>
     )
   }
