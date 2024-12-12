@@ -3,18 +3,19 @@ import { BiInfiniteScroller } from "@repo/ui/infinite-scrollers";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import React from "react";
 
-async function fetchInfiniteData(limit: number, offset: number = 0) {
+//this can be a server action
+async function fetchInfiniteData(limit: number, cursor: number = 0) {
   const rows = new Array(limit)
     .fill(0)
-    .map((_, i) => `Async loaded row #${i + offset * limit}`)
+    .map((_, i) => `Async loaded row #${i + cursor * limit}`)
     .map((i) => ({ foo: i, id: crypto.randomUUID() }));
 
   await new Promise((r) => setTimeout(r, 500));
 
   return {
     rows,
-    nextOffset: offset < 4 ? offset + 1 : null,
-    prevOffset: offset > -4 ? offset - 1 : null,
+    nextCursor: cursor < 4 ? cursor + 1 : null,
+    prevCursor: cursor > -4 ? cursor - 1 : null,
   };
 }
 
@@ -31,8 +32,8 @@ export function BiInfiniteScrollSection() {
     queryKey: ["bi-infinite-data"],
     queryFn: (ctx) => fetchInfiniteData(10, ctx.pageParam),
     initialPageParam: 0,
-    getNextPageParam: (nextPage, pages) => nextPage.nextOffset,
-    getPreviousPageParam: (prevPage, pages) => prevPage.prevOffset,
+    getNextPageParam: (nextPage, pages) => nextPage.nextCursor,
+    getPreviousPageParam: (prevPage, pages) => prevPage.prevCursor,
   });
 
   if (status === "error") return <p>Error {error.message}</p>;

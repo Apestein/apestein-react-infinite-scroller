@@ -107,10 +107,10 @@ export function BiInfiniteScroller({
 
   React.useEffect(() => {
     if (parentRef.current && !prevScrollHeight.current)
-      parentRef.current.scrollTop = parentRef.current.scrollHeight
+      parentRef.current.scrollTop = parentRef.current.scrollHeight //scroll to bottom on initial load, delete if you don't want this behavior
     else if (parentRef.current && prevScrollHeight.current) {
       parentRef.current.scrollTop =
-        parentRef.current.scrollHeight - prevScrollHeight.current
+        parentRef.current.scrollHeight - prevScrollHeight.current //restore scroll position for backwards scroll
     }
   }, [prevScrollHeight.current])
 

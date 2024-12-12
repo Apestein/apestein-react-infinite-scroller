@@ -1,28 +1,20 @@
-"use client"
-import { InfiniteScroller } from "@repo/ui/infinite-scrollers"
-import { getFooAction } from "../actions"
-import { useInfiniteQuery } from "@tanstack/react-query"
-import React from "react"
+"use client";
+import { InfiniteScroller } from "@repo/ui/infinite-scrollers";
+import { getInfiniteDataAction } from "../actions";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import React from "react";
 
 export function PreInfiniteScrollSection() {
-  const {
-    data,
-    error,
-    fetchNextPage,
-    hasNextPage,
-    isFetching,
-    isFetchingNextPage,
-    status,
-  } = useInfiniteQuery({
+  const { data, error, fetchNextPage, hasNextPage, status } = useInfiniteQuery({
     queryKey: ["prefetch-infinite-data"],
-    queryFn: ({ pageParam }) => getFooAction(pageParam),
+    queryFn: (ctx) => getInfiniteDataAction(10, ctx.pageParam),
     initialPageParam: 0,
     getNextPageParam: (nextPage, pages) => nextPage.nextCursor,
-  })
+  });
 
-  if (status === "error") return <p>Error {error.message}</p>
+  if (status === "error") return <p>Error {error.message}</p>;
   if (status === "pending")
-    return <p className="h-[312px]">Loading from client...</p>
+    return <p className="h-[312px]">Loading from client...</p>;
   return (
     <section>
       <h1 className="font-bold">Prefetch suspense example</h1>
@@ -35,7 +27,7 @@ export function PreInfiniteScrollSection() {
       >
         {data.pages.map((page, i) => (
           <React.Fragment key={i}>
-            {page.data.map((el) => (
+            {page.rows.map((el) => (
               <p key={el.id} id={el.id}>
                 {el.foo}
               </p>
@@ -44,5 +36,5 @@ export function PreInfiniteScrollSection() {
         ))}
       </InfiniteScroller>
     </section>
-  )
+  );
 }

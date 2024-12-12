@@ -1,23 +1,25 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { type NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams
-  const cursor = Number(searchParams.get("cursor"))
-  if (cursor == null)
+  const searchParams = request.nextUrl.searchParams;
+  const cursor = Number(searchParams.get("cursor"));
+  const limit = Number(searchParams.get("limit"));
+  if (cursor == null || limit == null)
     return NextResponse.json(
       { error: "Failed to process request" },
-      { status: 400 }
-    )
-  await new Promise((resolve) => setTimeout(resolve, 500))
-  const range = (start: number, stop: number, step: number) =>
-    Array.from({ length: (stop - start) / step + 1 }, (_, i) => ({
-      foo: start + i * step,
-      id: crypto.randomUUID().toString(),
-    }))
+      { status: 400 },
+    );
+  const rows = new Array(limit)
+    .fill(0)
+    .map((_, i) => `Async loaded row #${i + cursor * limit}`)
+    .map((i) => ({ foo: i, id: crypto.randomUUID() }));
+
+  await new Promise((r) => setTimeout(r, 500));
+
   const res = {
-    data: range(cursor, cursor + 9, 1),
-    nextCursor: cursor < 40 ? cursor + 9 + 1 : null,
-    prevCursor: cursor > 0 ? cursor - 9 - 1 : null,
-  }
-  return NextResponse.json(res)
+    rows,
+    nextCursor: cursor < 4 ? cursor + 1 : null,
+    prevCursor: cursor > -4 ? cursor - 1 : null,
+  };
+  return NextResponse.json(res);
 }

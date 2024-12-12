@@ -1,24 +1,30 @@
 "use client";
 import { InfiniteScroller } from "@repo/ui/infinite-scrollers";
-import { getFooAction, getInfiniteDataAction } from "../actions";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import React from "react";
 
+//this can be a server action
+async function fetchInfiniteData(limit: number, cursor: number = 0) {
+  const rows = new Array(limit)
+    .fill(0)
+    .map((_, i) => `Async loaded row #${i + cursor * limit}`)
+    .map((i) => ({ foo: i, id: crypto.randomUUID() }));
+
+  await new Promise((r) => setTimeout(r, 500));
+
+  return {
+    rows,
+    nextCursor: cursor < 4 ? cursor + 1 : null,
+    prevCursor: cursor > -4 ? cursor - 1 : null,
+  };
+}
+
 export function NormalInfiniteScrollSection() {
-  const {
-    data,
-    error,
-    fetchNextPage,
-    hasNextPage,
-    isFetching,
-    isFetchingNextPage,
-    status,
-  } = useInfiniteQuery({
+  const { data, error, fetchNextPage, hasNextPage, status } = useInfiniteQuery({
     queryKey: ["normal-infinite-data"],
-    // queryFn: ({ pageParam }) => getFooAction(pageParam),
-    queryFn: (ctx) => getInfiniteDataAction(10, ctx.pageParam),
+    queryFn: (ctx) => fetchInfiniteData(10, ctx.pageParam),
     initialPageParam: 0,
-    getNextPageParam: (nextPage, pages) => nextPage.nextOffset,
+    getNextPageParam: (nextPage, pages) => nextPage.nextCursor,
   });
 
   if (status === "error") return <p>Error {error.message}</p>;
