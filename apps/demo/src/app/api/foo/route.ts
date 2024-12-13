@@ -19,7 +19,6 @@ export async function GET(request: NextRequest) {
   const res = {
     rows,
     nextCursor: cursor < 4 ? cursor + 1 : null,
-    prevCursor: cursor > -4 ? cursor - 1 : null,
   };
   return NextResponse.json(res);
 }

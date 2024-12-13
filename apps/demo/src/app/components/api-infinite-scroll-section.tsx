@@ -11,20 +11,11 @@ async function fetchInfiniteData(limit: number, cursor: number) {
       id: string;
     }[];
     nextCursor: number | null;
-    prevCursor: number | null;
   }>; //use return type from api route
 }
 
 export function ApiInfiniteScrollSection() {
-  const {
-    data,
-    error,
-    fetchNextPage,
-    hasNextPage,
-    isFetching,
-    isFetchingNextPage,
-    status,
-  } = useInfiniteQuery({
+  const { data, error, fetchNextPage, hasNextPage, status } = useInfiniteQuery({
     queryKey: ["api-infinite-data"],
     queryFn: (ctx) => fetchInfiniteData(10, ctx.pageParam),
     initialPageParam: 0,
@@ -37,6 +28,7 @@ export function ApiInfiniteScrollSection() {
   return (
     <section>
       <h1 className="font-bold">Route-handler Example</h1>
+      <p>Notice this loads slower than prefetch</p>
       <InfiniteScroller
         fetchNextPage={fetchNextPage}
         hasNextPage={hasNextPage}

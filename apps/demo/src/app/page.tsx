@@ -16,7 +16,7 @@ import { getInfiniteDataAction } from "./actions";
 export default async function Home() {
   return (
     <main className="container mx-auto">
-      <div className="grid grid-cols-3 border-2 p-12">
+      <div className="grid grid-cols-3 border-2 p-8">
         <h1 className="col-span-3 justify-self-center text-2xl font-bold">
           Good for small list
         </h1>
@@ -24,26 +24,22 @@ export default async function Home() {
         <InverseInfiniteScrollSection />
         <BiInfiniteScrollSection />
       </div>
-      <div className="grid grid-cols-2 border-2 p-12">
-        <h1 className="col-span-3 justify-self-center text-2xl font-bold">
+      <div className="grid grid-cols-2 border-2 p-8">
+        <h1 className="col-span-2 justify-self-center text-2xl font-bold">
           Good for large list
         </h1>
         <UniVirtualInfiniteScrollSection />
         <BiVirtualInfiniteScrollSection />
       </div>
-      {/* <Suspense fallback="Loading from server...">
-        <PrefetchWrapper />
-      </Suspense>
-      <ApiInfiniteScrollSection /> */}
-      {/* <section className="h-[312px] border-2 p-2">
-        Notice how the top row loads one after the other. That is because they
-        use server action to fetch. Next.js server actions are placed in a
-        queue, which means only one action can be running at a time. You can use
-        API with route handlers instead but you lose the end-to-end typesafety
-        of server actions. To solve this you can use TRPC, or by using
-        prefetching and suspense. Notice how prefetching example loads the
-        quickest.
-      </section> */}
+      <div className="grid grid-cols-3 border-2 p-8">
+        <h1 className="col-span-3 justify-self-center text-2xl font-bold">
+          More examples
+        </h1>
+        <Suspense fallback="Loading from server...">
+          <PrefetchWrapper />
+        </Suspense>
+        <ApiInfiniteScrollSection />
+      </div>
     </main>
   );
 }

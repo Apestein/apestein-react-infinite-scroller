@@ -15,7 +15,6 @@ async function fetchInfiniteData(limit: number, cursor: number = 0) {
   return {
     rows,
     nextCursor: cursor < 4 ? cursor + 1 : null,
-    prevCursor: cursor > -4 ? cursor - 1 : null,
   };
 }
 

@@ -14,13 +14,12 @@ async function fetchInfiniteData(limit: number, offset: number = 0) {
 
   return {
     rows,
-    nextOffset: offset < 4 ? offset + 1 : null,
-    prevOffset: offset > -4 ? offset - 1 : null,
+    nextOffset: offset + 1,
   };
 }
 
 export function UniVirtualInfiniteScrollSection() {
-  const PAGE_SIZE = 10;
+  const PAGE_SIZE = 10000;
   const {
     status,
     data,
@@ -29,7 +28,7 @@ export function UniVirtualInfiniteScrollSection() {
     fetchNextPage,
     hasNextPage,
   } = useInfiniteQuery({
-    queryKey: ["virtual-infinite-data"],
+    queryKey: ["uni-virtual-infinite-data"],
     queryFn: (ctx) => fetchInfiniteData(PAGE_SIZE, ctx.pageParam),
     getNextPageParam: (lastGroup) => lastGroup.nextOffset,
     initialPageParam: 0,

@@ -32,7 +32,7 @@ export function BiVirtualInfiniteScrollSection() {
     hasNextPage,
     hasPreviousPage,
   } = useInfiniteQuery({
-    queryKey: ["virtual-infinite-data"],
+    queryKey: ["bi-virtual-infinite-data"],
     queryFn: (ctx) => fetchInfiniteData(PAGE_SIZE, ctx.pageParam),
     getNextPageParam: (lastGroup) => lastGroup.nextOffset,
     getPreviousPageParam: (firstGroup) => firstGroup.prevOffset,
